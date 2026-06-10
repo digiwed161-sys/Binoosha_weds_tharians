@@ -795,7 +795,7 @@ function openInvite(){
   if(l){ l.style.opacity = '0'; setTimeout(() => { l.style.display = 'none'; }, 720); }
   document.body.classList.remove('locked');
   window.scrollTo(0, 0);
-  setTimeout(function(){ var cue=document.getElementById('scrollCue'); if(cue && window.scrollY<60) cue.classList.add('show'); }, 760);
+  setTimeout(function(){ var cue=document.getElementById('scrollCue'); if(cue){ var atBottom=(window.innerHeight+window.scrollY) >= (document.documentElement.scrollHeight - 80); if(!atBottom) cue.classList.add('show'); } }, 760);
   const audio = document.getElementById('bgMusic');
   if(audio){
     audio.play().then(() => {
@@ -809,8 +809,10 @@ function openInvite(){
 window.addEventListener('scroll', function(){
   var cue=document.getElementById('scrollCue');
   if(!cue) return;
-  if(window.scrollY>60) cue.classList.remove('show');
-  else if(!document.body.classList.contains('locked')) cue.classList.add('show');
+  if(document.body.classList.contains('locked')){ cue.classList.remove('show'); return; }
+  var atBottom=(window.innerHeight+window.scrollY) >= (document.documentElement.scrollHeight - 80);
+  if(atBottom) cue.classList.remove('show');
+  else cue.classList.add('show');
 }, {passive:true});
 
 // ── WISHES ──
