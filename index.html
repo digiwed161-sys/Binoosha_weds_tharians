@@ -717,8 +717,8 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db          = firebase.database();
 const wishesRef   = db.ref('/binoosha-tharian-wishes');
-const WISHES_PAGE = 5;
-let   lastKey     = null;
+const WISHES_PAGE = 6;
+let   wishesQuery = null;
 let   wishesLoaded= 0;
 
 // ── COUNTDOWN ──
@@ -838,14 +838,22 @@ function sendWish(){
 
 // Initial load
 function loadWishes(count){
-  let q = wishesRef.orderByChild('ts').limitToLast(count);
-  q.on('value', snap => {
+  // orderByChild('ts') needs a Firebase index and gets rejected server-side;
+  // push keys are chronological, so orderByKey needs no index.
+  if(wishesQuery) wishesQuery.off('value');
+  wishesQuery = wishesRef.orderByKey().limitToLast(count);
+  wishesQuery.on('value', snap => {
     document.getElementById('wishesDisplay').innerHTML='';
+    let n = 0;
     if(snap.exists()){
       const arr=[];
-      snap.forEach(c => arr.push(c.val()));
+      // braces required: forEach cancels iteration on a truthy return, and push() returns a truthy length
+      snap.forEach(c => { arr.push(c.val()); });
+      n = arr.length;
       arr.reverse().forEach(w => renderWish(w.name,w.msg));
     }
+    const btn = document.querySelector('.load-more-btn');
+    if(btn) btn.style.display = (n < count) ? 'none' : '';
   });
 }
 wishesLoaded = WISHES_PAGE;
